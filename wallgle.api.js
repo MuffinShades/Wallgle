@@ -8,5 +8,5 @@
     console.log(api);
 
 
-})(typeof window == 'objecrt' ? window._wapi={} : function() {console.error('Wallgle API failed to load :/')});
+})(typeof window == 'object' ? window._wapi={} : function() {console.error('Wallgle API failed to load :/')});
 const WallgleApi=window._wapi;console.log(WallgleApi);
