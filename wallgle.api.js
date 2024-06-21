@@ -1,4 +1,8 @@
-(function(api){if(typeof api!='object'){if(typeof api=='function')api();return}
+(function(api){
+    if(typeof api!='object'){
+        if(typeof api=='function')api();
+        return
+    }
 //write all api code here and export it by doing api.
 
 api = {
@@ -9,7 +13,9 @@ api = {
 };
 
 
-})(typeof window=='object'?window._wapi={}:function(){console.error('Wallgle API failed to load :/')})=window._apiCode;
+})(typeof window=='object'?window._wapi={}:function(){
+    console.error('Wallgle API failed to load :/')
+})=window._apiCode;
 switch (typeof window._apiCode) {
     case 'object': {
         window.ApiCode = window._apiCode.getStatus();
