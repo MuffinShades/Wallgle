@@ -180,22 +180,7 @@ const BitStream = {
 //remove this before final export cause well we cant have those rapscallions accessing thing function
 api.exportObjectAs=void 0;
 })(typeof window=='object'?window._wapi={}:function(){
-    console.error('Wallgle API failed to load :/')
-})=window._apiCode;
-switch (typeof window._apiCode) {
-    case 'object': {
-        window.ApiCode = window._apiCode.getStatus();
-        window._wapi = window._apiCode;
-        break;
-    }
-    case 'number': {
-        window.ApiCode = window._apiCode;
-        break;
-    }
-    default: {
-        console.error('Failed to load api, got code ',window._apiCode);
-        window._wapi=void 0;
-        break;
-    }
-}
+    console.error('Wallgle API failed to load :/');
+    window._wapi = void 0;
+});
 const WallgleApi=window._wapi;
