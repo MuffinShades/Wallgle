@@ -1,4 +1,4 @@
-(function(api){
+(function(api, T){
     if(typeof api!='object'){
         if(typeof api=='function')api();
         return
@@ -10,20 +10,13 @@
 Main API class
 This is what will be exported, all other classes wont
 
+*Note DONT DO api = {} OR SOMETHING LIKE THAT OR WELL BE DOOMED D:
+*ok we wont be doomed now i fixed it :thumbsup:
 */
-api = {
-    status: 0,
-    getStatus: function() {
-        return this.status;
-    },
-    getPublicAccountInfo: function(id) {
-
-    },
-    exportObjectAs: function(c, a) {
-        if (typeof c != typeof void 0 && typeof a == 'string')
-            this[a] = c;
-    }
-};
+api.exportObjectAs = function(c, a) {
+    if (typeof c != typeof void 0 && typeof a == 'string')
+        this[a] = c;
+}
 
 /*
  * Base 64 Stuff
@@ -150,13 +143,86 @@ secure porfavor
 */
 var Communicator = {};
 
-Communicator.GetJson = function(url) {
+Communicator.SendJsonRequest = function(url, settings, rsFn) {
+    try {
+        fetch(url, settings).then(function(response) {
+            if (typeof rsFn == 'function') {
+                var dat = response.json();
+                rsFn(dat);
+            } else
+                throw new Error('Could not call response function!');
+        })
+    } catch (error) {
+        if (this.printFetchErrors)
+            console.warn('Error failed to Get Data from URL: ',url);
+    }
+}
+
+Communicator.SendJsonRequestAsync = async function(url, settings) {
+    try {
+        const response = (await fetch(url, settings)).json();
+        if (response == null)
+            throw new Error('Failed to parse response data :/');
+        return response;
+    } catch (error) {
+        if (this.printFetchErrors)
+            console.warn('Error failed to Get Data from URL: ',url);
+    }
+}
+
+Communicator.GetJson = function(url, dat, rsFn) {
     const req_settings = {
         method: 'GET',
         mode: 'cors',
         cache: 'no-cache',
-
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: typeof dat=='object'?JSON.stringify(dat):dat
     }
+
+    Communicator.SendJsonRequest(url, req_settings, rsFn);
+}
+
+Communicator.GetJsonAsync = async function(url, dat) {
+    const req_settings = {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'no-cache',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: typeof dat=='object'?JSON.stringify(dat):dat
+    };
+    return await this.SendJsonRequestAsync(url, req_settings);
+}
+
+Communicator.PostJson = function(url, dat, rsFn) {
+    const req_settings = {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: typeof dat=='object'?JSON.stringify(dat):dat
+    }
+
+    this.SendJsonRequest(url, req_settings, rsFn);
+}
+
+Communicator.PostJsonAsync = async function(url, dat) {
+    const req_settings = {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: typeof dat=='object'?JSON.stringify(dat):dat
+    }
+
+    return await this.SendJsonRequestAsync(url, req_settings);
 }
 
 //add random things that would be useful here oh yeah Zlib >:)
@@ -173,14 +239,19 @@ const BitStream = {
     cBit: 0,
 }
 
-//
+//Bytes Stream
+const ByteStream = {
+
+}
 
 
 
 //remove this before final export cause well we cant have those rapscallions accessing thing function
 api.exportObjectAs=void 0;
+window[T] = api;
 })(typeof window=='object'?window._wapi={}:function(){
     console.error('Wallgle API failed to load :/');
     window._wapi = void 0;
-});
+},'_wapi');
 const WallgleApi=window._wapi;
+console.log(window._wapi);
