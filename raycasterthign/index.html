@@ -17,7 +17,7 @@
                 dTheta: 0.01,
                 speed: 2,
                 v: 0,
-                nRays: 1,
+                nRays: 100,
                 fov: Math.PI / 2,
                 update: function() {
                     this.rot += this.dTheta;
@@ -60,26 +60,18 @@
 
             function castX(x, y, theta) {
                 if (theta % Math.PI == 0) return;
-                const originX = x, originY = y, dx = 1, dy = Math.tan(theta); //1/cos * sin -> x*cos = 1 (x is scale factor)
-
-                ctx.strokeStyle = '#f0f';
-                    ctx.beginPath();
-                    ctx.moveTo(x * tileSize, y * tileSize);
-                    ctx.lineTo((x+dx) * tileSize, (y+dy) * tileSize);
-                    ctx.stroke();
+                const originX = x, originY = y, 
+                    dx = Math.sign(Math.cos(theta)), 
+                    dy = Math.abs(Math.tan(theta)) * Math.sign(Math.sin(theta)); //1/cos * sin -> x*cos = 1 (x is scale factor)
 
                 return genericCast(originX, originY, x, y, dx, dy);
             }
 
             function castY(x, y, theta) {
                 if (theta % (Math.PI / 2) == 0) return;
-                const originX = x, originY = y, dx = 1 / Math.tan(theta), dy = 1; //cotangent instead of tangent
-
-                ctx.strokeStyle = '#ff0';
-                    ctx.beginPath();
-                    ctx.moveTo(x * tileSize, y * tileSize);
-                    ctx.lineTo((x+dx) * tileSize, (y+dy) * tileSize);
-                    ctx.stroke();
+                const originX = x, originY = y, 
+                    dx =  Math.abs(1 / Math.tan(theta)) * Math.sign(Math.cos(theta)), 
+                    dy = Math.sign(Math.sin(theta)); //cotangent instead of tangent
 
                 return genericCast(originX, originY, x, y, dx, dy);
             }
@@ -100,11 +92,18 @@
                     ctx.lineTo(cy.ex * tileSize, cy.ey * tileSize);
                     ctx.stroke();*/
 
+                    ctx.strokeStyle = '#f00';
+                    ctx.beginPath();
+                    ctx.moveTo(x * tileSize, y * tileSize);
+                    ctx.lineTo(t.ex * tileSize, t.ey * tileSize);
+                    ctx.stroke();
+
+
                 return {
                     d: t.d,
                     ex: t.ex,
                     ey: t.ey,
-                    mode: cx.d > cy.d ? 1 : 0
+                    mode: Math.abs(cx.d) > Math.abs(cy.d) ? 1 : 0
                 }
             }
 
