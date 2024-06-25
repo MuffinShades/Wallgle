@@ -3,7 +3,7 @@
     <body>
         <canvas id='c'></canvas>
         <script>
-            const can = document.getelementById('c');
+            const can = document.getElementById('c');
             const ctx = can.getContext('2d');
 
             can.style = 'position: absolute; top: 0; left: 0;';
@@ -11,14 +11,14 @@
             const FPS = 60;
 
             const p = {
-                x: 0,
-                y: 0,
+                x: 2,
+                y: 2,
                 rot: 0,
                 dTheta: 0.1,
                 speed: 2,
                 v: 0,
-                nRays: 40,
-                fov: 45,
+                nRays: 400,
+                fov: Math.PI,
                 update: function() {
 
                 }
@@ -104,6 +104,8 @@
             }
 
             setInterval(function() {
+                can.width = document.documentElement.clientWidth;
+                can.height = document.documentElement.clientHeight;
                 p.update();
                 renderScene();
             }, 1000 / FPS)
