@@ -8,7 +8,8 @@ var vec3 = function(x, y, z) {
         return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
     }
     this.getNormal = function() {
-
+        const l = this.getLen();
+        return new vec3(this.x / l, this.y / l, this.z / l);
     }
 }
 

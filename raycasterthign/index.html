@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <canvas id='c'></canvas>
+        <script>
+            const can = document.getelementById('c');
+            const ctx = can.getContext('2d');
+
+            can.style = 'position: absolute; top: 0; left: 0;';
+
+            const FPS = 60;
+
+            const p = {
+                x: 0,
+                y: 0,
+                rot: 0,
+                dTheta: 0.1,
+                speed: 2,
+                v: 0,
+                nRays: 40,
+                fov: 45,
+                update: function() {
+
+                }
+            }
+
+            var map = [
+                [1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,1],
+                [1,0,0,0,0,0,1],
+                [1,0,0,1,1,1,1],
+                [1,0,0,1,0,0,1],
+                [1,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1]
+            ];
+
+            const maxSteps = 10;
+
+            function genericCast(originX, originY, x, y, dx, dy) {
+                var steps = maxSteps;
+                var f = false;
+                while (steps-- > 0) {
+                    if (y > map.length || y < 0 || x > map[0].length || x < 0) break;
+
+                    if (map[Math.floor(y)][Math.floor(x)] > 0) {
+                        f = true;
+                        break; //intersection so break
+                    }
+
+                    x += dx;
+                    y += dy;
+                }
+
+                return {
+                    d: f ? Math.sqrt(Math.abs(x - originX)**2+Math.abs(y - originY)**2) : Infinity,
+                    ex: x,
+                    ey: y
+                }
+            }
+
+            function castX(x, y, theta) {
+                if (theta % Math.PI == 0) return;
+                const originX = x, originY = y, dx = 1, dy = Math.tan(theta); //1/cos * sin -> x*cos = 1 (x is scale factor)
+                return genericCast(originX, originY, x, y, dx, dy);
+            }
+
+            function castY(x, y, theta) {
+                if (theta % (Math.PI / 2) == 0) return;
+                const originX = x, originY = y, dx = 1 / Math.tan(theta), dy = 1; //cotangent instead of tangent
+                return genericCast(originX, originY, x, y, dx, dy);
+            }
+
+            function fancyCast(x, y, theta) {
+                var cx = castX(x, y, theta), cy = castY(x, y, theta);
+                return {
+                    dist: Math.min(cx.d, cy.d),
+                    mode: cx.d > cy.d ? 0 : 1
+                }
+            }
+
+            function basicCast(x, y, theta) {
+                return genericCast(x, y, x, y, Math.cos(theta), Math.sin(theta));
+            }
+
+            function getDistanceProd(d, far) {
+                return 1 - (d / far);
+            }
+
+            function renderScene() {
+                //for now draw map and player
+                const dTheta = p.fov / p.nRays, finalTheta = p.rot + p.fov;
+                const far = 7, middle = can.height / 2;
+                var x = 0, step = can.width / p.nRays;
+                for (var theta = p.rot; theta < finalTheta; theta += dTheta) {
+                    //just gonna do a basic cast for now
+                    var ray = basicCast(p.x, p.y, theta);
+                    var dp = getDistanceProd(ray.d, far);
+                    const h = dp * can.height;
+                    const y = middle - h / 2;
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(x, y, step, h);
+                    x += step;
+                }
+            }
+
+            setInterval(function() {
+                p.update();
+                renderScene();
+            }, 1000 / FPS)
+        </script>
+    </body>
+</html>
