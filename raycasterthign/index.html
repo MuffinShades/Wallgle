@@ -14,13 +14,13 @@
                 x: 2,
                 y: 2,
                 rot: 0,
-                dTheta: 0.1,
+                dTheta: 0.01,
                 speed: 2,
                 v: 0,
-                nRays: 400,
-                fov: Math.PI,
+                nRays: 1,
+                fov: Math.PI / 2,
                 update: function() {
-
+                    this.rot += this.dTheta;
                 }
             }
 
@@ -61,30 +61,58 @@
             function castX(x, y, theta) {
                 if (theta % Math.PI == 0) return;
                 const originX = x, originY = y, dx = 1, dy = Math.tan(theta); //1/cos * sin -> x*cos = 1 (x is scale factor)
+
+                ctx.strokeStyle = '#f0f';
+                    ctx.beginPath();
+                    ctx.moveTo(x * tileSize, y * tileSize);
+                    ctx.lineTo((x+dx) * tileSize, (y+dy) * tileSize);
+                    ctx.stroke();
+
                 return genericCast(originX, originY, x, y, dx, dy);
             }
 
             function castY(x, y, theta) {
                 if (theta % (Math.PI / 2) == 0) return;
                 const originX = x, originY = y, dx = 1 / Math.tan(theta), dy = 1; //cotangent instead of tangent
+
+                ctx.strokeStyle = '#ff0';
+                    ctx.beginPath();
+                    ctx.moveTo(x * tileSize, y * tileSize);
+                    ctx.lineTo((x+dx) * tileSize, (y+dy) * tileSize);
+                    ctx.stroke();
+
                 return genericCast(originX, originY, x, y, dx, dy);
             }
 
             function fancyCast(x, y, theta) {
                 var cx = castX(x, y, theta), cy = castY(x, y, theta);
-                return {
-                    dist: Math.min(cx.d, cy.d),
-                    mode: cx.d > cy.d ? 0 : 1
-                }
-            }
+                var t = cx.d > cy.d ? cy : cx;
 
-            function basicCast(x, y, theta) {
-                return genericCast(x, y, x, y, Math.cos(theta), Math.sin(theta));
+                /*ctx.strokeStyle = '#f00';
+                    ctx.beginPath();
+                    ctx.moveTo(x * tileSize, y * tileSize);
+                    ctx.lineTo(cx.ex * tileSize, cx.ey * tileSize);
+                    ctx.stroke();
+
+                    ctx.strokeStyle = '#00f';
+                    ctx.beginPath();
+                    ctx.moveTo(x * tileSize, y * tileSize);
+                    ctx.lineTo(cy.ex * tileSize, cy.ey * tileSize);
+                    ctx.stroke();*/
+
+                return {
+                    d: t.d,
+                    ex: t.ex,
+                    ey: t.ey,
+                    mode: cx.d > cy.d ? 1 : 0
+                }
             }
 
             function getDistanceProd(d, far) {
                 return 1 - (d / far);
             }
+
+            const tileSize = can.width / map.length;
 
             function renderScene() {
                 //for now draw map and player
@@ -93,19 +121,33 @@
                 var x = 0, step = can.width / p.nRays;
                 for (var theta = p.rot; theta < finalTheta; theta += dTheta) {
                     //just gonna do a basic cast for now
-                    var ray = basicCast(p.x, p.y, theta);
+                    var ray = fancyCast(p.x, p.y, theta);
                     var dp = getDistanceProd(ray.d, far);
                     const h = dp * can.height;
                     const y = middle - h / 2;
                     ctx.fillStyle = '#000';
-                    ctx.fillRect(x, y, step, h);
+                    //ctx.fillRect(x, y, step, h);
                     x += step;
+
+                    //render le ray just to see stuff
+                    ctx.strokeStyle = '#0f0';
+                    ctx.beginPath();
+                    ctx.moveTo(p.x * tileSize, p.y * tileSize);
+                    ctx.lineTo((p.x + Math.cos(p.rot)) * tileSize, (p.y + Math.sin(p.rot)) * tileSize);
+                    ctx.stroke();
                 }
             }
 
             setInterval(function() {
-                can.width = document.documentElement.clientWidth;
+                can.width = document.documentElement.clientHeight;
                 can.height = document.documentElement.clientHeight;
+                for (var i = 0; i < map.length; i++) {
+                    for (var j = 0; j < map[i].length; j++) {
+                        if (map[i][j] <= 0) continue;
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(j * tileSize, i * tileSize, tileSize, tileSize);
+                    }
+                }
                 p.update();
                 renderScene();
             }, 1000 / FPS)
